@@ -14,6 +14,15 @@ else
   end
 end
 
+# Strip "Clr" from the beginning of name
+def simplify_name(text)
+  if text.split(" ")[0] == "Clr"
+    text.split(" ")[1..-1].join(" ")
+  else
+    text
+  end
+end
+
 def parse_council(text)
   count = 0
   name = text.lines[0].strip
@@ -29,7 +38,7 @@ def parse_council(text)
   end
   if text.lines[area_line_no + 5].split("\t")[0] == "Mayor"
     ScraperWiki.save_sqlite(["councillor", "council"], {
-      "councillor" => text.lines[area_line_no + 5].split("\t")[1].strip,
+      "councillor" => simplify_name(text.lines[area_line_no + 5].split("\t")[1].strip),
       "position" => "mayor",
       "council" => name})
     count += 1
@@ -38,7 +47,7 @@ def parse_council(text)
   end
   if text.lines[area_line_no + 6].split("\t")[0] == "Deputy"
     ScraperWiki.save_sqlite(["councillor", "council"], {
-      "councillor" => text.lines[area_line_no + 6].split("\t")[1].strip,
+      "councillor" => simplify_name(text.lines[area_line_no + 6].split("\t")[1].strip),
       "position" => "deputy mayor",
       "council" => name})
     count += 1
@@ -47,7 +56,7 @@ def parse_council(text)
   end
   text.lines[area_line_no + 7].split(",").each do |t|
     ScraperWiki.save_sqlite(["councillor", "council"], {
-      "councillor" => t.strip,
+      "councillor" => simplify_name(t.strip),
       "council" => name})
     count += 1
   end
