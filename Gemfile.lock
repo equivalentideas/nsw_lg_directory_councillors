@@ -1,9 +1,19 @@
+GIT
+  remote: https://github.com/openaustralia/scraperwiki-ruby.git
+  revision: fc50176812505e463077d5c673d504a6a234aa78
+  branch: morph_defaults
+  specs:
+    scraperwiki (3.0.1)
+      httpclient
+      sqlite_magic
+
 GEM
   specs:
     domain_name (0.5.12)
       unf (>= 0.0.5, < 1.0.0)
     http-cookie (1.0.1)
       domain_name (~> 0.5)
+    httpclient (2.4.0)
     mechanize (2.7.1)
       domain_name (~> 0.5, >= 0.5.1)
       http-cookie (~> 1.0.0)
@@ -20,6 +30,9 @@ GEM
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     ntlm-http (0.1.1)
+    sqlite3 (1.3.9)
+    sqlite_magic (0.0.3)
+      sqlite3
     unf (0.1.1)
       unf_ext
     unf_ext (0.0.6)
@@ -30,3 +43,4 @@ PLATFORMS
 
 DEPENDENCIES
   mechanize
+  scraperwiki!

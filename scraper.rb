@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require "mechanize"
+require "scraperwiki"
 
 agent = Mechanize.new
 if File.exists?("data.txt")
@@ -14,7 +15,7 @@ else
 end
 
 def parse_council(text)
-  records = []
+  count = 0
   name = text.lines[0].strip
   # Skip over contact fields like phone, email, etc...
   area_line_no = 3
@@ -27,21 +28,31 @@ def parse_council(text)
     raise "Unexpected format for number of councillors line"
   end
   if text.lines[area_line_no + 5].split("\t")[0] == "Mayor"
-    records << {councillor: text.lines[area_line_no + 5].split("\t")[1].strip, position: "mayor", council: name}
+    ScraperWiki.save_sqlite(["councillor", "council"], {
+      "councillor" => text.lines[area_line_no + 5].split("\t")[1].strip,
+      "position" => "mayor",
+      "council" => name})
+    count += 1
   else
     puts "Unexpected format for mayor line in #{name}"
   end
   if text.lines[area_line_no + 6].split("\t")[0] == "Deputy"
-    records << {councillor: text.lines[area_line_no + 6].split("\t")[1].strip, position: "deputy mayor", council: name}
+    ScraperWiki.save_sqlite(["councillor", "council"], {
+      "councillor" => text.lines[area_line_no + 6].split("\t")[1].strip,
+      "position" => "deputy mayor",
+      "council" => name})
+    count += 1
   else
     raise "Unexpected format for deputy mayor line"
   end
   text.lines[area_line_no + 7].split(",").each do |t|
-    records << {councillor: t.strip, council: name}
+    ScraperWiki.save_sqlite(["councillor", "council"], {
+      "councillor" => t.strip,
+      "council" => name})
+    count += 1
   end
   # Do a sanity check
-  puts "Councillor numbers not consistent for #{name}" unless records.count == no_councillors
-  records
+  puts "Councillor numbers not consistent for #{name}" unless count == no_councillors
 end
 
 # Find the line "COUNTY COUNCIL"
@@ -52,8 +63,6 @@ end_line = data.lines.find_index{|l| l =~ /COUNTY COUNCIL/} - 3
 # And split into each council on double blank line
 blocks = data.lines[start_line..end_line].join.split("\r\n\r\n\r\n")
 
-records = []
 blocks.each do |t|
-  records += parse_council(t)
+  parse_council(t)
 end
-p records
