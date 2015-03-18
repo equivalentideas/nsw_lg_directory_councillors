@@ -25,8 +25,6 @@ end
 
 def parse_council(text)
   count = 0
-  puts text
-  exit
   name = text.lines[0].strip
   # Skip over contact fields like phone, email, etc...
   area_line_no = 3
@@ -42,7 +40,7 @@ def parse_council(text)
     raise "Unexpected format for number of councillors line"
   end
   if text.lines[area_line_no + 5].split("\t")[0] == "Mayor"
-    ScraperWiki.save_sqlite(["councillor", "council"], {
+    ScraperWiki.save_sqlite(["councillor", "council_name"], {
       "councillor" => simplify_name(text.lines[area_line_no + 5].split("\t")[1].strip),
       "position" => "mayor",
       "council_name" => name,
@@ -52,7 +50,7 @@ def parse_council(text)
     puts "Unexpected format for mayor line in #{name}"
   end
   if text.lines[area_line_no + 6].split("\t")[0] == "Deputy"
-    ScraperWiki.save_sqlite(["councillor", "council"], {
+    ScraperWiki.save_sqlite(["councillor", "council_name"], {
       "councillor" => simplify_name(text.lines[area_line_no + 6].split("\t")[1].strip),
       "position" => "deputy mayor",
       "council_name" => name,
@@ -62,7 +60,7 @@ def parse_council(text)
     raise "Unexpected format for deputy mayor line"
   end
   text.lines[area_line_no + 7].split(",").each do |t|
-    ScraperWiki.save_sqlite(["councillor", "council"], {
+    ScraperWiki.save_sqlite(["councillor", "council_name"], {
       "councillor" => simplify_name(t.strip),
       "council_name" => name,
       "council_website" => website})
