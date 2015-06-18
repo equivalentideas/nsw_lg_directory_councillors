@@ -16,11 +16,16 @@ end
 
 # Strip "Clr" from the beginning of name
 def simplify_name(text)
-  if text.split(" ")[0] == "Clr"
-    text.split(" ")[1..-1].join(" ")
-  else
-    text
+  parts = text.split(" ")
+  first = 0
+  last = -1
+  if parts[0] == "Clr"
+    first = 1
   end
+  if parts[-1] == "elected)"
+    last = -3
+  end
+  parts[first..last].join(" ")
 end
 
 def parse_council(text)
@@ -39,27 +44,30 @@ def parse_council(text)
   else
     raise "Unexpected format for number of councillors line"
   end
-  if text.lines[area_line_no + 5].split("\t")[0] == "Mayor"
+  mayor_line = text.lines[area_line_no + 5].split("\t")
+  if (mayor_line[0] == "Mayor" or mayor_line[0] == "Lord Mayor") and not mayor_line[1].empty?
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
-      "councillor" => simplify_name(text.lines[area_line_no + 5].split("\t")[1].strip),
-      "position" => "mayor",
+      "councillor" => simplify_name(mayor_line[1].strip),
+      "position" => mayor_line[0],
       "council_name" => name,
       "council_website" => website})
     count += 1
   else
-    puts "Unexpected format for mayor line in #{name}"
+    puts "Unexpected format for mayor line in #{name}: #{mayor_line}"
   end
-  if text.lines[area_line_no + 6].split("\t")[0] == "Deputy"
+  deputy_line = text.lines[area_line_no + 6].split("\t")
+  if deputy_line[0] == "Deputy" and not deputy_line[1].empty?
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
-      "councillor" => simplify_name(text.lines[area_line_no + 6].split("\t")[1].strip),
+      "councillor" => simplify_name(deputy_line[1].strip),
       "position" => "deputy mayor",
       "council_name" => name,
       "council_website" => website})
     count += 1
   else
-    raise "Unexpected format for deputy mayor line"
+    raise "Unexpected format for deputy mayor line in #{name}: #{deputy_line}"
   end
   text.lines[area_line_no + 7].split(",").each do |t|
+    next if t.strip.empty?
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
       "councillor" => simplify_name(t.strip),
       "council_name" => name,
@@ -67,7 +75,7 @@ def parse_council(text)
     count += 1
   end
   # Do a sanity check
-  puts "Councillor numbers not consistent for #{name}" unless count == no_councillors
+  puts "Councillor numbers not consistent for #{name}: expected #{no_councillors} got #{count}" unless count == no_councillors
 end
 
 # Find the line "COUNTY COUNCIL"
@@ -76,7 +84,7 @@ end_line = data.lines.find_index{|l| l =~ /COUNTY COUNCIL/} - 3
 
 # Skip first 6 lines
 # And split into each council on double blank line
-blocks = data.lines[start_line..end_line].join.split("\r\n\r\n\r\n")
+blocks = data.lines[start_line..end_line].join.split(/\r?\n\r?\n\r?\n/)
 
 blocks.each do |t|
   parse_council(t)
