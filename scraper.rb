@@ -28,6 +28,11 @@ def simplify_name(text)
   parts[first..last].join(" ")
 end
 
+def create_id(council, name)
+  components = council + "/" + name
+  components.downcase.gsub(" ","_")
+end
+
 def parse_council(text)
   count = 0
   name = text.lines[0].strip
@@ -48,6 +53,7 @@ def parse_council(text)
   if (mayor_line[0] == "Mayor" or mayor_line[0] == "Lord Mayor") and not mayor_line[1].empty?
     councillor_name = simplify_name(mayor_line[1].strip)
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
+      "id" => create_id(name, councillor_name),
       "councillor" => councillor_name,
       "position" => mayor_line[0],
       "council_name" => name,
@@ -60,6 +66,7 @@ def parse_council(text)
   if deputy_line[0] == "Deputy" and not deputy_line[1].empty?
     councillor_name = simplify_name(deputy_line[1].strip)
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
+      "id" => create_id(name, councillor_name),
       "councillor" => councillor_name,
       "position" => "deputy mayor",
       "council_name" => name,
@@ -71,6 +78,7 @@ def parse_council(text)
   text.lines[area_line_no + 7].split(",").each do |t|
     next if t.strip.empty?
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
+      "id" => create_id(name, simplify_name(t.strip)),
       "councillor" => simplify_name(t.strip),
       "council_name" => name,
       "council_website" => website})
