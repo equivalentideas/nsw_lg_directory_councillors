@@ -46,8 +46,9 @@ def parse_council(text)
   end
   mayor_line = text.lines[area_line_no + 5].split("\t")
   if (mayor_line[0] == "Mayor" or mayor_line[0] == "Lord Mayor") and not mayor_line[1].empty?
+    councillor_name = simplify_name(mayor_line[1].strip)
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
-      "councillor" => simplify_name(mayor_line[1].strip),
+      "councillor" => councillor_name,
       "position" => mayor_line[0],
       "council_name" => name,
       "council_website" => website})
@@ -57,8 +58,9 @@ def parse_council(text)
   end
   deputy_line = text.lines[area_line_no + 6].split("\t")
   if deputy_line[0] == "Deputy" and not deputy_line[1].empty?
+    councillor_name = simplify_name(deputy_line[1].strip)
     ScraperWiki.save_sqlite(["councillor", "council_name"], {
-      "councillor" => simplify_name(deputy_line[1].strip),
+      "councillor" => councillor_name,
       "position" => "deputy mayor",
       "council_name" => name,
       "council_website" => website})
